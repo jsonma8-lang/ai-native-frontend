@@ -1,0 +1,13 @@
+{
+  "name": "@myapp/types",
+  "version": "1.0.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./database": "./database.types.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

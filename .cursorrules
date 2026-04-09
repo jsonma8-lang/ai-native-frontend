@@ -1,0 +1,126 @@
+# Cursor AI 开发规则
+
+## 项目上下文
+这是一个 AI-Native 电商平台，使用 Monorepo 架构（Turborepo + pnpm workspace）。
+
+## 技术栈约束
+- 必须使用 TypeScript
+- UI 组件基于 shadcn/ui + Radix UI
+- 样式使用 Tailwind CSS v4
+- 数据层使用 Supabase
+- 框架使用 Next.js 14 App Router
+
+## 代码风格
+- 使用函数式组件和 React Hooks
+- 优先使用 `const` 而非 `let`
+- 使用箭头函数
+- 组件 props 必须定义 TypeScript 接口
+- 使用 `cn()` 工具函数合并 className
+
+## 文件组织
+- 组件文件使用 PascalCase: `ProductCard.tsx`
+- 工具函数使用 camelCase: `formatPrice.ts`
+- 每个组件一个文件
+- 相关组件放在同一目录下
+
+## 组件开发规则
+1. 所有组件必须导出类型定义
+2. 使用 `React.forwardRef` 处理 ref
+3. 组件必须支持 `className` prop
+4. 使用 `cn()` 合并样式类
+5. 优先使用 shadcn/ui 现有组件
+
+## Supabase 使用规则
+1. 使用 `@supabase/auth-helpers-nextjs` 进行认证
+2. 所有数据库操作必须处理错误
+3. 使用 Row Level Security (RLS)
+4. 实时订阅必须在组件卸载时清理
+
+## 命名约定
+- 组件: `ProductCard`, `UserProfile`
+- Hooks: `useAuth`, `useProducts`
+- 类型: `ProductType`, `UserType`
+- 常量: `SITE_CONFIG`, `API_ROUTES`
+
+## 禁止事项
+- 不要使用 `any` 类型
+- 不要在 packages 中引入业务逻辑
+- 不要直接修改 props
+- 不要使用内联样式（除非必要）
+- 不要忘记清理副作用（useEffect cleanup）
+
+## 性能优化
+- 使用 `React.memo` 优化重渲染
+- 大列表使用虚拟滚动
+- 图片使用 Next.js Image 组件
+- 使用动态导入拆分代码
+
+## 安全规则
+- 所有用户输入必须验证
+- 使用 Supabase RLS 保护数据
+- 敏感信息使用环境变量
+- API 路由必须验证用户权限
+
+## AI 辅助开发提示
+当我要求你创建新功能时:
+1. 先检查是否有可复用的组件
+2. 遵循现有的代码模式
+3. 使用 TypeScript 严格模式
+4. 添加必要的错误处理
+5. 考虑响应式设计
+
+## 示例代码模式
+
+### 组件模板
+```typescript
+import * as React from 'react'
+import { cn } from '@myapp/ui'
+
+interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
+  // props 定义
+}
+
+export function Component({ className, ...props }: ComponentProps) {
+  return (
+    <div className={cn('base-styles', className)} {...props}>
+      {/* 内容 */}
+    </div>
+  )
+}
+```
+
+### Supabase 查询模板
+```typescript
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
+export async function fetchProducts() {
+  const supabase = createClientComponentClient()
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+```
+
+### 实时订阅模板
+```typescript
+useEffect(() => {
+  const channel = supabase
+    .channel('products-changes')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'products' },
+      (payload) => {
+        // 处理变化
+      }
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}, [])
+```
