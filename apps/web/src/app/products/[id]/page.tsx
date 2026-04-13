@@ -7,24 +7,36 @@ type Product = Database['public']['Tables']['products']['Row']
 
 // 在构建时生成所有产品页面
 export async function generateStaticParams() {
-  // 如果环境变量未配置，返回空数组（允许构建通过）
+  // 如果环境变量未配置，返回一个占位路径以满足 Next.js 的要求
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.warn('Supabase credentials not found, skipping static generation for product pages')
-    return []
+    console.warn('Supabase credentials not found, generating placeholder product page')
+    return [{ id: 'placeholder' }]
   }
 
-  const supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  try {
+    const supabase = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
 
-  const { data: products } = await supabase.from('products').select('id')
+    const { data: products, error } = await supabase.from('products').select('id')
 
-  if (!products) return []
+    if (error) {
+      console.error('Failed to fetch products:', error)
+      return [{ id: 'placeholder' }]
+    }
 
-  return products.map((product: { id: string }) => ({
-    id: product.id,
-  }))
+    if (!products || products.length === 0) {
+      return [{ id: 'placeholder' }]
+    }
+
+    return products.map((product: { id: string }) => ({
+      id: product.id,
+    }))
+  } catch (error) {
+    console.error('Error in generateStaticParams:', error)
+    return [{ id: 'placeholder' }]
+  }
 }
 
 // 获取产品数据
