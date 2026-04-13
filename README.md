@@ -159,6 +159,28 @@ create policy "Users can manage their own favorites"
 
 ## 部署
 
+### GitHub Pages 部署（推荐）
+
+项目已配置为自动部署到 GitHub Pages。
+
+#### 快速开始
+
+1. **启用 GitHub Pages**
+   - 进入仓库 Settings → Pages
+   - Source 选择: `GitHub Actions`
+
+2. **推送代码触发部署**
+   ```bash
+   git push origin main
+   ```
+
+3. **访问部署的网站**
+   ```
+   https://jsonma8-lang.github.io/ai-native-frontend/
+   ```
+
+详细配置请查看 [GitHub Pages 部署指南](docs/GITHUB_PAGES.md)
+
 ### GitHub Actions CI/CD
 
 项目已配置自动化 CI/CD 流程：
