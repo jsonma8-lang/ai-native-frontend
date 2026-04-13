@@ -159,14 +159,62 @@ create policy "Users can manage their own favorites"
 
 ## 部署
 
-### Vercel 部署
+### GitHub Actions CI/CD
+
+项目已配置自动化 CI/CD 流程：
+
+#### 工作流说明
+
+1. **CI 检查** (`.github/workflows/ci.yml`)
+   - 触发时机：Push 到 main/develop 分支或 PR
+   - 执行内容：代码检查、类型检查、测试
+
+2. **生产部署** (`.github/workflows/deploy.yml`)
+   - 触发时机：Push 到 main 分支
+   - 执行内容：构建并部署到 Vercel 生产环境
+
+3. **预览部署** (`.github/workflows/preview.yml`)
+   - 触发时机：创建 PR 到 main 分支
+   - 执行内容：构建并部署预览环境，在 PR 中评论预览链接
+
+#### 配置 GitHub Secrets
+
+在 GitHub 仓库设置中添加以下 Secrets：
+
+```bash
+# Vercel 相关
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_org_id
+VERCEL_PROJECT_ID=your_project_id
+
+# Supabase 环境变量
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+获取 Vercel 配置：
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 登录并关联项目
+vercel link
+
+# 获取项目信息
+cat .vercel/project.json
+```
+
+### 手动 Vercel 部署
+
+如需手动部署：
 
 1. 连接 GitHub 仓库
 2. 设置环境变量
 3. 配置构建设置:
-   - Build Command: `cd apps/web && pnpm build`
+   - Build Command: `pnpm build`
    - Output Directory: `apps/web/.next`
    - Install Command: `pnpm install`
+   - Root Directory: `./`
 
 ## 贡献指南
 
