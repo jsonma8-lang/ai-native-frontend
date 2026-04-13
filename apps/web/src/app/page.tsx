@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -31,12 +33,12 @@ export default function HomePage() {
           </div>
 
           <div className="mt-12 space-x-4">
-            <a
+            <Link
               href="/products"
               className="inline-block bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
             >
               浏览产品
-            </a>
+            </Link>
           </div>
         </div>
       </div>
