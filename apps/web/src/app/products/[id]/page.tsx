@@ -7,9 +7,15 @@ type Product = Database['public']['Tables']['products']['Row']
 
 // 在构建时生成所有产品页面
 export async function generateStaticParams() {
+  // 如果环境变量未配置，返回空数组（允许构建通过）
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('Supabase credentials not found, skipping static generation for product pages')
+    return []
+  }
+
   const supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )
 
   const { data: products } = await supabase.from('products').select('id')
@@ -23,9 +29,14 @@ export async function generateStaticParams() {
 
 // 获取产品数据
 async function getProduct(id: string): Promise<Product | null> {
+  // 如果环境变量未配置，返回 null
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return null
+  }
+
   const supabase = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )
 
   const { data, error } = await supabase
