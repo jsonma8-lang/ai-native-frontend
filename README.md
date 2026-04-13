@@ -8,7 +8,7 @@
 - **UI**: shadcn/ui + Radix UI + Tailwind CSS v4
 - **数据层**: Supabase (PostgreSQL + Auth + Realtime)
 - **Monorepo**: Turborepo + pnpm workspace
-- **部署**: Vercel
+- **部署**: GitHub Pages
 
 ## 项目结构
 
@@ -140,7 +140,7 @@ create policy "Users can manage their own favorites"
 - ⏳ Supabase 认证
 - ⏳ 产品展示页面
 - ⏳ 实时协作功能
-- ⏳ Vercel 部署
+- ✅ GitHub Pages 部署
 
 ## AI 辅助开发
 
@@ -159,44 +159,36 @@ create policy "Users can manage their own favorites"
 
 ## 部署
 
-### Vercel 部署（推荐）
+### GitHub Pages 部署
 
-项目使用 Vercel 部署，支持 Next.js 的所有功能（SSR、动态路由等）。
+项目使用 GitHub Pages 部署静态站点。
 
 #### 自动部署
 
-推送到 `main` 分支会自动触发 Vercel 部署。
+推送到 `main` 分支会自动触发 GitHub Pages 部署。
 
-#### 配置 GitHub Secrets
+#### 配置步骤
+
+1. **启用 GitHub Pages**
+   - 进入仓库 Settings → Pages
+   - Source 选择 `GitHub Actions`
+
+2. **配置 GitHub Secrets**
 
 在 GitHub 仓库设置中添加以下 Secrets：
 
 ```bash
-# Vercel 相关
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_org_id
-VERCEL_PROJECT_ID=your_project_id
-
 # Supabase 环境变量
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-获取 Vercel 配置：
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
+3. **访问部署的站点**
 
-# 登录并关联项目
-vercel link
-
-# 获取项目信息
-cat .vercel/project.json
+部署完成后，访问：
 ```
-
-获取 Vercel Token：访问 https://vercel.com/account/tokens
-
-详细配置请查看 [CI/CD 文档](docs/CICD.md)
+https://jsonma8-lang.github.io/ai-native-frontend/
+```
 
 ### GitHub Actions CI/CD
 
@@ -208,52 +200,11 @@ cat .vercel/project.json
    - 触发时机：Push 到 main/develop 分支或 PR
    - 执行内容：代码检查、类型检查、测试
 
-2. **生产部署** (`.github/workflows/deploy.yml`)
+2. **GitHub Pages 部署** (`.github/workflows/deploy-github-pages.yml`)
    - 触发时机：Push 到 main 分支
-   - 执行内容：构建并部署到 Vercel 生产环境
+   - 执行内容：构建静态站点并部署到 GitHub Pages
 
-3. **预览部署** (`.github/workflows/preview.yml`)
-   - 触发时机：创建 PR 到 main 分支
-   - 执行内容：构建并部署预览环境，在 PR 中评论预览链接
-
-#### 配置 GitHub Secrets
-
-在 GitHub 仓库设置中添加以下 Secrets：
-
-```bash
-# Vercel 相关
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_org_id
-VERCEL_PROJECT_ID=your_project_id
-
-# Supabase 环境变量
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-获取 Vercel 配置：
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
-
-# 登录并关联项目
-vercel link
-
-# 获取项目信息
-cat .vercel/project.json
-```
-
-### 手动 Vercel 部署
-
-如需手动部署：
-
-1. 连接 GitHub 仓库
-2. 设置环境变量
-3. 配置构建设置:
-   - Build Command: `pnpm build`
-   - Output Directory: `apps/web/.next`
-   - Install Command: `pnpm install`
-   - Root Directory: `./`
+详细配置请查看 [CI/CD 文档](docs/CICD.md)
 
 ## 贡献指南
 

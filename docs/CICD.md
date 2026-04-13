@@ -1,6 +1,6 @@
 # GitHub Actions CI/CD 配置说明
 
-本项目使用 GitHub Actions 实现自动化 CI/CD 流程。
+本项目使用 GitHub Actions 实现自动化 CI/CD 流程，部署到 GitHub Pages。
 
 ## 工作流文件
 
@@ -18,64 +18,33 @@
 5. 执行类型检查（通过 build）
 6. 运行测试
 
-### 2. 生产部署 (`deploy.yml`)
+### 2. GitHub Pages 部署 (`deploy-github-pages.yml`)
 
 **触发条件：**
 - Push 到 `main` 分支
+- 手动触发（workflow_dispatch）
 
 **执行步骤：**
 1. 检出代码
 2. 安装依赖
-3. 构建项目
-4. 部署到 Vercel 生产环境
+3. 构建静态站点（Next.js static export）
+4. 上传构建产物到 GitHub Pages
+5. 部署到 GitHub Pages
 
-### 3. 预览部署 (`preview.yml`)
-
-**触发条件：**
-- 创建 PR 到 `main` 分支
-
-**执行步骤：**
-1. 检出代码
-2. 安装依赖
-3. 构建项目
-4. 部署到 Vercel 预览环境
-5. 在 PR 中评论预览链接
+**注意事项：**
+- 项目使用 Next.js 静态导出模式（`output: 'export'`）
+- 动态路由通过 `generateStaticParams` 预生成
+- 所有产品页面在构建时从 Supabase 获取并生成静态 HTML
 
 ## 配置步骤
 
-### 1. 获取 Vercel 配置信息
+### 1. 启用 GitHub Pages
 
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
+1. 进入仓库 Settings → Pages
+2. Source 选择 `GitHub Actions`
+3. 保存设置
 
-# 登录 Vercel
-vercel login
-
-# 关联项目（在项目根目录执行）
-vercel link
-
-# 查看项目配置
-cat .vercel/project.json
-```
-
-输出示例：
-```json
-{
-  "orgId": "team_xxxxx",
-  "projectId": "prj_xxxxx"
-}
-```
-
-### 2. 获取 Vercel Token
-
-1. 访问 https://vercel.com/account/tokens
-2. 点击 "Create Token"
-3. 输入 Token 名称（如：github-actions）
-4. 选择 Scope（建议选择特定项目）
-5. 复制生成的 Token
-
-### 3. 配置 GitHub Secrets
+### 2. 配置 GitHub Secrets
 
 在 GitHub 仓库中配置 Secrets：
 
@@ -85,17 +54,14 @@ cat .vercel/project.json
 
 | Secret 名称 | 说明 | 获取方式 |
 |------------|------|---------|
-| `VERCEL_TOKEN` | Vercel API Token | 从 Vercel 账户设置获取 |
-| `VERCEL_ORG_ID` | Vercel 组织 ID | 从 `.vercel/project.json` 获取 |
-| `VERCEL_PROJECT_ID` | Vercel 项目 ID | 从 `.vercel/project.json` 获取 |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 项目 URL | 从 Supabase 项目设置获取 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase 匿名密钥 | 从 Supabase 项目设置获取 |
 
-### 4. 验证配置
+### 3. 验证配置
 
-1. 提交代码到 `main` 分支，触发生产部署
-2. 创建 PR 到 `main` 分支，触发预览部署
-3. 在 GitHub Actions 页面查看工作流执行状态
+1. 提交代码到 `main` 分支，触发部署
+2. 在 GitHub Actions 页面查看工作流执行状态
+3. 部署完成后访问：`https://jsonma8-lang.github.io/ai-native-frontend/`
 
 ## 工作流程
 
@@ -112,17 +78,14 @@ git push origin feature/new-feature
 
 # 3. 创建 PR 到 main 分支
 # - 自动触发 CI 检查
-# - 自动部署预览环境
-# - PR 中会显示预览链接
 
 # 4. Code Review 通过后合并到 main
-# - 自动触发生产部署
-# - 部署到 Vercel 生产环境
+# - 自动触发 GitHub Pages 部署
 ```
 
 ### 分支策略
 
-- `main`: 生产分支，自动部署到生产环境
+- `main`: 生产分支，自动部署到 GitHub Pages
 - `develop`: 开发分支（可选）
 - `feature/*`: 功能分支
 - `fix/*`: 修复分支
@@ -134,18 +97,60 @@ git push origin feature/new-feature
 1. 检查 GitHub Actions 日志
 2. 确认所有 Secrets 已正确配置
 3. 本地运行 `pnpm build` 验证构建
+4. 检查是否有动态路由未配置 `generateStaticParams`
 
 ### 部署失败
 
-1. 检查 Vercel Token 是否有效
-2. 确认 `VERCEL_ORG_ID` 和 `VERCEL_PROJECT_ID` 正确
-3. 检查 Vercel 项目配置
+1. 确认 GitHub Pages 已启用且 Source 设置为 `GitHub Actions`
+2. 检查构建产物是否正确生成在 `apps/web/out` 目录
+3. 查看 GitHub Actions 日志中的详细错误信息
 
 ### 环境变量问题
 
 1. 确认所有必需的环境变量已在 GitHub Secrets 中配置
 2. 检查环境变量名称是否正确（区分大小写）
 3. 验证 Supabase 配置是否有效
+4. 注意：构建时需要访问 Supabase 来生成静态页面
+
+### 页面 404 错误
+
+1. 检查 `next.config.js` 中的 `basePath` 配置是否正确
+2. 确认 `.nojekyll` 文件已生成在 `out` 目录
+3. 验证路由路径是否包含正确的 basePath 前缀
+
+## 技术说明
+
+### 静态导出限制
+
+GitHub Pages 只支持静态站点，因此项目使用 Next.js 的静态导出功能：
+
+- ✅ 支持：静态页面、预生成的动态路由、客户端数据获取
+- ❌ 不支持：服务器端渲染（SSR）、API Routes、动态 ISR
+
+### 动态路由处理
+
+产品详情页 `/products/[id]` 通过以下方式实现静态生成：
+
+```typescript
+export async function generateStaticParams() {
+  // 构建时从 Supabase 获取所有产品 ID
+  const { data: products } = await supabase.from('products').select('id')
+  return products.map((product) => ({ id: product.id }))
+}
+```
+
+### basePath 配置
+
+由于部署在 `https://jsonma8-lang.github.io/ai-native-frontend/`，需要配置 basePath：
+
+```javascript
+// next.config.js
+const nextConfig = {
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/ai-native-frontend' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/ai-native-frontend/' : '',
+}
+```
 
 ## 优化建议
 
@@ -153,35 +158,29 @@ git push origin feature/new-feature
 
 工作流已配置 pnpm 缓存，加速依赖安装。
 
-### 2. 并行执行
+### 2. 增量构建
 
-可以将 lint、test、build 拆分为并行任务：
-
-```yaml
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps: [...]
-  
-  test:
-    runs-on: ubuntu-latest
-    steps: [...]
-  
-  build:
-    runs-on: ubuntu-latest
-    steps: [...]
-```
-
-### 3. 条件部署
-
-可以添加条件判断，只在特定情况下部署：
+可以配置只在相关文件变更时触发构建：
 
 ```yaml
-if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
 ```
+
+### 3. 构建优化
+
+- 使用 Turborepo 缓存加速构建
+- 优化图片和静态资源
+- 启用 Next.js 的增量静态生成
 
 ## 相关资源
 
 - [GitHub Actions 文档](https://docs.github.com/en/actions)
-- [Vercel CLI 文档](https://vercel.com/docs/cli)
+- [GitHub Pages 文档](https://docs.github.com/en/pages)
+- [Next.js 静态导出文档](https://nextjs.org/docs/app/building-your-application/deploying/static-exports)
 - [pnpm Action](https://github.com/pnpm/action-setup)
