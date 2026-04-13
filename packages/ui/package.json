@@ -9,7 +9,7 @@
     "./card": "./src/components/card.tsx"
   },
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
     "react": "^18.3.0",
@@ -19,6 +19,10 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.33.0",
     "typescript": "^5.4.0"
   },
   "peerDependencies": {

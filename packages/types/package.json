@@ -7,6 +7,9 @@
     ".": "./index.ts",
     "./database": "./database.types.ts"
   },
+  "scripts": {
+    "lint": "echo 'No lint needed for types package'"
+  },
   "devDependencies": {
     "typescript": "^5.4.0"
   }

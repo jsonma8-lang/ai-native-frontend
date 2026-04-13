@@ -6,6 +6,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "lint": "echo 'No lint needed for config package'"
+  },
   "devDependencies": {
     "typescript": "^5.4.0"
   }
