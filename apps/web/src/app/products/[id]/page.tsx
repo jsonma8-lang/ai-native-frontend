@@ -1,97 +1,71 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { notFound } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@myapp/types/database'
+import Link from 'next/link'
 
 type Product = Database['public']['Tables']['products']['Row']
 
-export default function ProductDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+// 在构建时生成所有产品页面
+export async function generateStaticParams() {
+  const supabase = createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
-  const supabase = createClient()
+  const { data: products } = await supabase.from('products').select('id')
 
-  useEffect(() => {
-    fetchProduct()
-  }, [params.id])
+  if (!products) return []
 
-  const fetchProduct = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', params.id)
-      .single()
-    if (!error) setProduct(data)
-    setLoading(false)
+  return products.map((product: { id: string }) => ({
+    id: product.id,
+  }))
+}
+
+// 获取产品数据
+async function getProduct(id: string): Promise<Product | null> {
+  const supabase = createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export default async function ProductDetailPage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const product = await getProduct(params.id)
+
+  if (!product) {
+    notFound()
   }
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(price)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b sticky top-0 z-10">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
-            <span className="text-xl font-semibold tracking-tight">AI-Native 电商</span>
-          </div>
-        </header>
-        <main className="max-w-6xl mx-auto px-6 py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-pulse">
-            <div className="aspect-square bg-white rounded-2xl" />
-            <div className="space-y-4 pt-4">
-              <div className="h-8 bg-gray-200 rounded-full w-3/4" />
-              <div className="h-6 bg-gray-200 rounded-full w-1/3" />
-              <div className="h-4 bg-gray-200 rounded-full w-full mt-6" />
-              <div className="h-4 bg-gray-200 rounded-full w-5/6" />
-              <div className="h-4 bg-gray-200 rounded-full w-4/6" />
-            </div>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">商品不存在</h2>
-          <p className="text-gray-500 mb-6 text-sm">该商品可能已下架或链接有误</p>
-          <button
-            onClick={() => router.push('/products')}
-            className="px-5 py-2.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-gray-700 transition-colors"
-          >
-            返回商品列表
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 导航栏 */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span
-            className="text-xl font-semibold tracking-tight cursor-pointer"
-            onClick={() => router.push('/products')}
-          >
+          <Link href="/products" className="text-xl font-semibold tracking-tight">
             AI-Native 电商
-          </span>
-          <button
-            onClick={() => router.push('/products')}
+          </Link>
+          <Link
+            href="/products"
             className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1 transition-colors"
           >
             ← 返回列表
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -145,12 +119,12 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 返回按钮 */}
-            <button
-              onClick={() => router.push('/products')}
-              className="w-full py-3.5 border-2 border-gray-900 text-gray-900 font-medium rounded-xl hover:bg-gray-900 hover:text-white transition-colors duration-200"
+            <Link
+              href="/products"
+              className="w-full py-3.5 border-2 border-gray-900 text-gray-900 font-medium rounded-xl hover:bg-gray-900 hover:text-white transition-colors duration-200 text-center block"
             >
               继续逛逛
-            </button>
+            </Link>
           </div>
         </div>
       </main>

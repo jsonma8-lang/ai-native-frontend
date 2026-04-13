@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages (Disabled)
-
-# This workflow is disabled because Next.js dynamic routes require server-side rendering
-# which is not supported by GitHub Pages. Using Vercel deployment instead.
+name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
