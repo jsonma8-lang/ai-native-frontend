@@ -159,27 +159,44 @@ create policy "Users can manage their own favorites"
 
 ## 部署
 
-### GitHub Pages 部署（推荐）
+### Vercel 部署（推荐）
 
-项目已配置为自动部署到 GitHub Pages。
+项目使用 Vercel 部署，支持 Next.js 的所有功能（SSR、动态路由等）。
 
-#### 快速开始
+#### 自动部署
 
-1. **启用 GitHub Pages**
-   - 进入仓库 Settings → Pages
-   - Source 选择: `GitHub Actions`
+推送到 `main` 分支会自动触发 Vercel 部署。
 
-2. **推送代码触发部署**
-   ```bash
-   git push origin main
-   ```
+#### 配置 GitHub Secrets
 
-3. **访问部署的网站**
-   ```
-   https://jsonma8-lang.github.io/ai-native-frontend/
-   ```
+在 GitHub 仓库设置中添加以下 Secrets：
 
-详细配置请查看 [GitHub Pages 部署指南](docs/GITHUB_PAGES.md)
+```bash
+# Vercel 相关
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_org_id
+VERCEL_PROJECT_ID=your_project_id
+
+# Supabase 环境变量
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+获取 Vercel 配置：
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 登录并关联项目
+vercel link
+
+# 获取项目信息
+cat .vercel/project.json
+```
+
+获取 Vercel Token：访问 https://vercel.com/account/tokens
+
+详细配置请查看 [CI/CD 文档](docs/CICD.md)
 
 ### GitHub Actions CI/CD
 

@@ -1,9 +1,8 @@
-name: Preview Deployment (Disabled)
-
-# This workflow is disabled. Using GitHub Pages deployment instead.
+name: Preview Deployment
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 jobs:
   preview:
